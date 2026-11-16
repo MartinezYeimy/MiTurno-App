@@ -1,7 +1,9 @@
 package com.miturno.app.ui.affiliate
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -13,9 +15,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -41,6 +47,7 @@ import com.miturno.app.ui.components.NoticeCard
 import com.miturno.app.ui.theme.Blue100
 import com.miturno.app.ui.theme.Blue50
 import com.miturno.app.ui.theme.Blue700
+import com.miturno.app.ui.theme.BluePrimary
 import com.miturno.app.ui.theme.Blue900
 import com.miturno.app.ui.theme.Ink
 import com.miturno.app.ui.theme.OutlineBlue
@@ -112,23 +119,35 @@ fun ServicesScreen(
 }
 
 @Composable
+private fun SelectionMark(selected: Boolean) {
+    if (selected) {
+        Box(Modifier.size(30.dp).background(Blue700, CircleShape), contentAlignment = Alignment.Center) {
+            Icon(Icons.Filled.Check, contentDescription = "Seleccionado", tint = Color.White, modifier = Modifier.size(20.dp))
+        }
+    } else {
+        Box(Modifier.size(30.dp).border(2.dp, OutlineBlue, CircleShape))
+    }
+}
+
+@Composable
 private fun PointOption(point: Point, selected: Boolean, onClick: () -> Unit) {
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = if (selected) Blue100 else Color.White),
-        border = BorderStroke(if (selected) 3.dp else 1.dp, if (selected) Blue700 else OutlineBlue)
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = if (selected) Blue50 else Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+        border = BorderStroke(if (selected) 2.dp else 1.dp, if (selected) BluePrimary else Blue100)
     ) {
         Row(Modifier.padding(18.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Filled.LocationOn, contentDescription = null, tint = Blue700, modifier = Modifier.size(30.dp))
+            Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
                 Text(point.name, style = MaterialTheme.typography.titleLarge, color = Ink)
                 Text(point.address, style = MaterialTheme.typography.bodyMedium, color = Ink)
             }
-            if (selected) {
-                Spacer(Modifier.width(8.dp))
-                Icon(Icons.Filled.Check, contentDescription = "Seleccionado", tint = Blue700, modifier = Modifier.size(32.dp))
-            }
+            Spacer(Modifier.width(8.dp))
+            SelectionMark(selected)
         }
     }
 }
@@ -139,21 +158,29 @@ private fun ServiceCard(service: ServiceItem, enabled: Boolean, onClick: () -> U
         onClick = onClick,
         enabled = enabled,
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(18.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Blue50,
-            disabledContainerColor = Color(0xFFF3F3F3)
+            containerColor = Color.White,
+            disabledContainerColor = Color(0xFFF1F5FA)
         ),
-        border = BorderStroke(1.dp, if (enabled) Blue700 else OutlineBlue)
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp, disabledElevation = 0.dp),
+        border = BorderStroke(1.dp, if (enabled) Blue100 else OutlineBlue)
     ) {
-        Column(Modifier.padding(18.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text(service.name, style = MaterialTheme.typography.titleLarge, color = Ink)
-            Text(service.description, style = MaterialTheme.typography.bodyMedium, color = Ink)
-            Text(
-                if (enabled) "Toca para pedir turno" else "No disponible ahora",
-                style = MaterialTheme.typography.titleSmall,
-                color = if (enabled) Blue700 else Ink
+        Row(Modifier.padding(18.dp).fillMaxWidth(), verticalAlignment = Alignment.Top) {
+            Icon(
+                Icons.AutoMirrored.Filled.List, contentDescription = null,
+                tint = if (enabled) Blue700 else OutlineBlue, modifier = Modifier.size(30.dp)
             )
+            Spacer(Modifier.width(14.dp))
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(service.name, style = MaterialTheme.typography.titleLarge, color = Ink)
+                Text(service.description, style = MaterialTheme.typography.bodyMedium, color = Ink)
+                Text(
+                    if (enabled) "Toca para pedir turno" else "No disponible ahora",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = if (enabled) Blue700 else Ink
+                )
+            }
         }
     }
 }

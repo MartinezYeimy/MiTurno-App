@@ -26,7 +26,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -48,11 +47,15 @@ import com.miturno.app.ui.components.AppScaffold
 import com.miturno.app.ui.components.BigButton
 import com.miturno.app.ui.components.ButtonKind
 import com.miturno.app.ui.components.ConfirmDialog
+import com.miturno.app.ui.components.GradientCard
+import com.miturno.app.ui.components.MiTurnoLogo
+import com.miturno.app.ui.components.TicketIcon
 import com.miturno.app.ui.components.InfoCard
 import com.miturno.app.ui.components.remainingText
 import com.miturno.app.ui.theme.Blue100
 import com.miturno.app.ui.theme.Blue50
 import com.miturno.app.ui.theme.Blue700
+import com.miturno.app.ui.theme.BluePrimary
 import com.miturno.app.ui.theme.Blue900
 import com.miturno.app.ui.theme.Ink
 
@@ -89,9 +92,9 @@ fun HomeScreen(
         snackbarHostState = snackbar,
         actions = {
             TextButton(onClick = onLogout) {
-                Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null, tint = Ink)
+                Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null, tint = Color.White)
                 Spacer(Modifier.width(6.dp))
-                Text("Salir", color = Ink)
+                Text("Salir", color = Color.White)
             }
         }
     ) { inner ->
@@ -104,6 +107,7 @@ fun HomeScreen(
                 .padding(horizontal = 20.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { MiTurnoLogo(width = 104.dp) }
             Text("Hola, ${vm.firstName}", style = MaterialTheme.typography.headlineLarge, color = Ink)
 
             when {
@@ -111,7 +115,6 @@ fun HomeScreen(
                     CircularProgressIndicator()
                 }
                 current.turn == null -> {
-                    NoTurnCard()
                     BigButton("Solicitar turno", onClick = onRequestTurn, icon = Icons.Filled.Add)
                 }
                 else -> ActiveTurnSection(current.turn, current, onCancel = { confirmCancel = true })
@@ -121,6 +124,10 @@ fun HomeScreen(
                 "Ver historial de turnos", onClick = onHistory,
                 icon = Icons.AutoMirrored.Filled.List, kind = ButtonKind.Secondary
             )
+
+            if (current != null && current.turn == null) {
+                NoTurnCard()
+            }
         }
     }
 
@@ -144,15 +151,24 @@ fun HomeScreen(
 private fun NoTurnCard() {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Blue50),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
         border = BorderStroke(1.dp, Blue100)
     ) {
-        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("No tienes un turno activo", style = MaterialTheme.typography.headlineSmall, color = Blue900)
+        Column(
+            Modifier.padding(20.dp).fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            TicketIcon(size = 44.dp)
+            Text(
+                "No tienes un turno activo", style = MaterialTheme.typography.headlineSmall,
+                color = Blue900, textAlign = TextAlign.Center
+            )
             Text(
                 "Pide tu turno desde aquí y espera donde prefieras. Te avisaremos cuando esté cerca.",
-                style = MaterialTheme.typography.bodyLarge, color = Ink
+                style = MaterialTheme.typography.bodyLarge, color = Ink, textAlign = TextAlign.Center
             )
         }
     }
@@ -161,27 +177,21 @@ private fun NoTurnCard() {
 @Composable
 private fun ActiveTurnSection(turn: Turn, progress: Progress, onCancel: () -> Unit) {
     // Tarjeta principal con el número de turno (RF-04)
-    Surface(color = Blue700, shape = RoundedCornerShape(24.dp), modifier = Modifier.fillMaxWidth()) {
-        Column(
-            Modifier.padding(24.dp).fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text("TU TURNO", style = MaterialTheme.typography.titleMedium, color = Color.White)
-            Text(turn.number, style = MaterialTheme.typography.displayLarge, color = Color.White)
-            Text(
-                turn.serviceName, style = MaterialTheme.typography.titleMedium,
-                color = Color.White, textAlign = TextAlign.Center
-            )
-        }
+    GradientCard {
+        Text("TU TURNO", style = MaterialTheme.typography.titleMedium, color = Color.White)
+        Text(turn.number, style = MaterialTheme.typography.displayLarge, color = Color.White)
+        Text(
+            turn.serviceName, style = MaterialTheme.typography.titleMedium,
+            color = Color.White, textAlign = TextAlign.Center
+        )
     }
 
     if (turn.status == TurnStatus.IN_SERVICE) {
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp),
+            shape = RoundedCornerShape(22.dp),
             colors = CardDefaults.cardColors(containerColor = Blue100),
-            border = BorderStroke(2.dp, Blue700)
+            border = BorderStroke(2.dp, BluePrimary)
         ) {
             Row(Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Filled.Notifications, contentDescription = null, tint = Blue900, modifier = Modifier.size(36.dp))

@@ -12,25 +12,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Paleta: blancos + azules, texto casi negro para el máximo contraste (WCAG AA/AAA)
-val Blue900 = Color(0xFF0A3D7A)
-val Blue700 = Color(0xFF0D5CB6)
-val Blue100 = Color(0xFFDCEBFA)
-val Blue50 = Color(0xFFF2F7FD)
-val Ink = Color(0xFF0B0B0B)
-val InkSoft = Color(0xFF2B2B2B)
-val OutlineBlue = Color(0xFF5B7089)
-val DangerRed = Color(0xFFB3261E)
+// Paleta de Mi Turno: azul principal, azul de botones, azul muy claro, blanco y azul oscuro para textos
+val BluePrimary = Color(0xFF4DA3FF)
+val Blue700 = Color(0xFF2E7DD1)
+val Blue900 = Color(0xFF17365D)
+val Blue100 = Color(0xFFD6E8FC)
+val Blue50 = Color(0xFFEAF4FF)
+val Ink = Color(0xFF17365D)
+val InkSoft = Color(0xFF3B5578)
+val OutlineBlue = Color(0xFFA9C8EA)
+val DangerRed = Color(0xFFC0392B)
+val DangerBg = Color(0xFFFDE4E1)
 val SuccessGreen = Color(0xFF14532D)
 val SuccessBg = Color(0xFFDDF3E4)
-val NeutralBg = Color(0xFFECECEC)
+val NeutralBg = Color(0xFFE8EEF5)
 
 private val Scheme = lightColorScheme(
     primary = Blue700,
     onPrimary = Color.White,
     primaryContainer = Blue100,
     onPrimaryContainer = Blue900,
-    secondary = Blue900,
+    secondary = BluePrimary,
     onSecondary = Color.White,
     secondaryContainer = Blue100,
     onSecondaryContainer = Blue900,
@@ -65,9 +67,9 @@ private val AppTypography = Typography(
 )
 
 private val AppShapes = Shapes(
-    small = RoundedCornerShape(12.dp),
-    medium = RoundedCornerShape(16.dp),
-    large = RoundedCornerShape(24.dp)
+    small = RoundedCornerShape(14.dp),
+    medium = RoundedCornerShape(20.dp),
+    large = RoundedCornerShape(28.dp)
 )
 
 @Composable

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -45,6 +46,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.ImeAction
@@ -55,11 +57,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.miturno.app.data.model.TurnStatus
 import com.miturno.app.ui.theme.Blue100
+import com.miturno.app.ui.theme.BluePrimary
+import com.miturno.app.ui.theme.DangerBg
 import com.miturno.app.ui.theme.Blue50
 import com.miturno.app.ui.theme.Blue700
 import com.miturno.app.ui.theme.Blue900
 import com.miturno.app.ui.theme.DangerRed
 import com.miturno.app.ui.theme.Ink
+import com.miturno.app.ui.theme.InkSoft
 import com.miturno.app.ui.theme.NeutralBg
 import com.miturno.app.ui.theme.OutlineBlue
 import com.miturno.app.ui.theme.SuccessBg
@@ -67,7 +72,7 @@ import com.miturno.app.ui.theme.SuccessGreen
 
 enum class ButtonKind { Primary, Secondary, Danger }
 
-/** Botón grande (mínimo 64 dp de alto) con texto claro; fácil de tocar para cualquier persona. */
+/** Botón grande y redondeado (mínimo 60 dp de alto) con texto claro; fácil de tocar para cualquier persona. */
 @Composable
 fun BigButton(
     text: String,
@@ -79,32 +84,54 @@ fun BigButton(
 ) {
     val content: @Composable RowScope.() -> Unit = {
         if (icon != null) {
-            Icon(icon, contentDescription = null, modifier = Modifier.size(28.dp))
+            Icon(icon, contentDescription = null, modifier = Modifier.size(26.dp))
             Spacer(Modifier.width(10.dp))
         }
         Text(text, style = MaterialTheme.typography.labelLarge, textAlign = TextAlign.Center)
     }
-    val m = modifier.fillMaxWidth().heightIn(min = 64.dp)
-    val shape = RoundedCornerShape(16.dp)
+    val m = modifier.fillMaxWidth().heightIn(min = 60.dp)
+    val shape = RoundedCornerShape(20.dp)
     when (kind) {
         ButtonKind.Primary -> Button(
-            onClick = onClick, modifier = m, enabled = enabled, shape = shape, content = content
-        )
-        ButtonKind.Secondary -> OutlinedButton(
             onClick = onClick, modifier = m, enabled = enabled, shape = shape,
-            border = BorderStroke(2.dp, if (enabled) Blue700 else OutlineBlue),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Blue700,
+                contentColor = Color.White,
+                disabledContainerColor = Blue100,
+                disabledContentColor = Color(0xFF6B84A3)
+            ),
+            elevation = ButtonDefaults.buttonElevation(
+                defaultElevation = 4.dp, pressedElevation = 1.dp, disabledElevation = 0.dp
+            ),
+            content = content
+        )
+        ButtonKind.Secondary -> Button(
+            onClick = onClick, modifier = m, enabled = enabled, shape = shape,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Blue100,
+                contentColor = Blue900,
+                disabledContainerColor = Blue50,
+                disabledContentColor = Color(0xFF6B84A3)
+            ),
+            elevation = ButtonDefaults.buttonElevation(
+                defaultElevation = 0.dp, pressedElevation = 0.dp, disabledElevation = 0.dp
+            ),
+            border = BorderStroke(1.dp, if (enabled) OutlineBlue else Blue100),
             content = content
         )
         ButtonKind.Danger -> OutlinedButton(
             onClick = onClick, modifier = m, enabled = enabled, shape = shape,
-            border = BorderStroke(2.dp, DangerRed),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = DangerRed),
+            border = BorderStroke(1.5.dp, if (enabled) DangerRed else OutlineBlue),
+            colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = if (enabled) DangerBg.copy(alpha = 0.45f) else Color.Transparent,
+                contentColor = DangerRed
+            ),
             content = content
         )
     }
 }
 
-/** Estructura estándar de pantalla: barra superior blanca + contenido + avisos (snackbar). */
+/** Estructura estándar de pantalla: encabezado azul ondulado + contenido sobre fondo claro + avisos (snackbar). */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppScaffold(
@@ -115,31 +142,45 @@ fun AppScaffold(
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     content: @Composable (PaddingValues) -> Unit
 ) {
-    Scaffold(
-        modifier = modifier,
-        containerColor = Color.White,
-        topBar = {
-            TopAppBar(
-                title = { Text(title, style = MaterialTheme.typography.headlineSmall, color = Blue900) },
-                navigationIcon = {
-                    if (onBack != null) {
-                        IconButton(onClick = onBack, modifier = Modifier.size(56.dp)) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Volver",
-                                tint = Ink,
-                                modifier = Modifier.size(30.dp)
-                            )
-                        }
-                    }
-                },
-                actions = actions,
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
-            )
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        content = content
-    )
+    AppBackground(modifier) {
+        Scaffold(
+            containerColor = Color.Transparent,
+            topBar = {
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .shadow(6.dp, WaveHeaderShape, clip = false)
+                        .background(BluePrimary, WaveHeaderShape)
+                ) {
+                    TopAppBar(
+                        title = { Text(title, style = MaterialTheme.typography.headlineSmall, color = Color.White) },
+                        navigationIcon = {
+                            if (onBack != null) {
+                                IconButton(onClick = onBack, modifier = Modifier.size(56.dp)) {
+                                    Icon(
+                                        Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = "Volver",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(30.dp)
+                                    )
+                                }
+                            }
+                        },
+                        actions = actions,
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = Color.Transparent,
+                            titleContentColor = Color.White,
+                            navigationIconContentColor = Color.White,
+                            actionIconContentColor = Color.White
+                        )
+                    )
+                    Spacer(Modifier.height(18.dp))
+                }
+            },
+            snackbarHost = { SnackbarHost(snackbarHostState) },
+            content = content
+        )
+    }
 }
 
 /** Campo de texto grande. Si es contraseña muestra el botón "Mostrar / Ocultar" con texto (más claro que un ícono). */
@@ -152,7 +193,8 @@ fun AppTextField(
     keyboardType: KeyboardType = KeyboardType.Text,
     isPassword: Boolean = false,
     imeAction: ImeAction = ImeAction.Next,
-    onDone: (() -> Unit)? = null
+    onDone: (() -> Unit)? = null,
+    leadingIcon: ImageVector? = null
 ) {
     var visible by remember { mutableStateOf(false) }
     val trailing: (@Composable () -> Unit)? = if (isPassword) {
@@ -162,6 +204,9 @@ fun AppTextField(
             }
         }
     } else null
+    val leading: (@Composable () -> Unit)? = if (leadingIcon != null) {
+        { Icon(leadingIcon, contentDescription = null, tint = Blue700) }
+    } else null
 
     OutlinedTextField(
         value = value,
@@ -170,21 +215,24 @@ fun AppTextField(
         label = { Text(label, style = MaterialTheme.typography.bodyMedium) },
         textStyle = MaterialTheme.typography.bodyLarge,
         singleLine = true,
-        shape = RoundedCornerShape(14.dp),
+        shape = RoundedCornerShape(16.dp),
         visualTransformation = if (isPassword && !visible) PasswordVisualTransformation() else VisualTransformation.None,
         keyboardOptions = KeyboardOptions(
             keyboardType = if (isPassword) KeyboardType.Password else keyboardType,
             imeAction = imeAction
         ),
         keyboardActions = KeyboardActions(onDone = { onDone?.invoke() }),
+        leadingIcon = leading,
         trailingIcon = trailing,
         colors = OutlinedTextFieldDefaults.colors(
             focusedTextColor = Ink,
             unfocusedTextColor = Ink,
-            focusedBorderColor = Blue700,
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White,
+            focusedBorderColor = BluePrimary,
             unfocusedBorderColor = OutlineBlue,
             focusedLabelColor = Blue700,
-            unfocusedLabelColor = Ink,
+            unfocusedLabelColor = InkSoft,
             cursorColor = Blue700
         )
     )
@@ -195,8 +243,9 @@ fun AppTextField(
 fun InfoCard(label: String, value: String, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Blue50),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
         border = BorderStroke(1.dp, Blue100)
     ) {
         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -212,9 +261,10 @@ fun NoticeCard(text: String, modifier: Modifier = Modifier, isError: Boolean = f
     val border = if (isError) DangerRed else Blue700
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = BorderStroke(2.dp, border)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        border = BorderStroke(1.5.dp, border)
     ) {
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Icon(Icons.Filled.Warning, contentDescription = null, tint = border, modifier = Modifier.size(28.dp))
@@ -240,6 +290,7 @@ fun StatusChip(status: String, modifier: Modifier = Modifier) {
         TurnStatus.IN_SERVICE -> Blue700 to Color.White
         TurnStatus.PENDING -> Blue100 to Blue900
         TurnStatus.DONE -> SuccessBg to SuccessGreen
+        TurnStatus.SKIPPED, TurnStatus.CANCELLED -> DangerBg to DangerRed
         else -> NeutralBg to Ink
     }
     Text(
@@ -264,6 +315,7 @@ fun ConfirmDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = Color.White,
+        shape = RoundedCornerShape(28.dp),
         title = { Text(title, color = Ink) },
         text = { Text(text, style = MaterialTheme.typography.bodyLarge, color = Ink) },
         confirmButton = { TextButton(onClick = onConfirm) { Text(confirmText) } },

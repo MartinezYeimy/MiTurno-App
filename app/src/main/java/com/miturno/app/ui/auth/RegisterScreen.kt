@@ -12,7 +12,14 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -32,7 +39,9 @@ import com.miturno.app.data.model.User
 import com.miturno.app.ui.components.AppScaffold
 import com.miturno.app.ui.components.AppTextField
 import com.miturno.app.ui.components.BigButton
+import com.miturno.app.ui.components.MiTurnoLogo
 import com.miturno.app.ui.components.NoticeCard
+import com.miturno.app.ui.theme.Blue700
 import com.miturno.app.ui.theme.Ink
 
 @Composable
@@ -68,23 +77,28 @@ fun RegisterScreen(
                 .padding(horizontal = 24.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
+            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { MiTurnoLogo(width = 96.dp) }
             Text(
                 "Llena tus datos tal como aparecen en tu carné de afiliación.",
                 style = MaterialTheme.typography.bodyLarge, color = Ink
             )
-            AppTextField(name, { name = it.take(60) }, "Nombre completo")
-            AppTextField(document, { document = it.filter(Char::isDigit).take(15) }, "Documento de identidad", keyboardType = KeyboardType.Number)
-            AppTextField(email, { email = it.take(50) }, "Correo electrónico", keyboardType = KeyboardType.Email)
-            AppTextField(affiliation, { affiliation = it.take(20) }, "Número de afiliación")
-            AppTextField(password, { password = it.take(20) }, "Contraseña (mínimo 6 caracteres)", isPassword = true)
-            AppTextField(confirm, { confirm = it.take(20) }, "Repite la contraseña", isPassword = true, imeAction = ImeAction.Done, onDone = { submit() })
+            AppTextField(name, { name = it.take(60) }, "Nombre completo", leadingIcon = Icons.Filled.Person)
+            AppTextField(document, { document = it.filter(Char::isDigit).take(15) }, "Documento de identidad", keyboardType = KeyboardType.Number, leadingIcon = Icons.Filled.AccountBox)
+            AppTextField(email, { email = it.take(50) }, "Correo electrónico", keyboardType = KeyboardType.Email, leadingIcon = Icons.Filled.Email)
+            AppTextField(affiliation, { affiliation = it.take(20) }, "Número de afiliación", leadingIcon = Icons.Filled.CheckCircle)
+            AppTextField(password, { password = it.take(20) }, "Contraseña (mínimo 6 caracteres)", isPassword = true, leadingIcon = Icons.Filled.Lock)
+            AppTextField(confirm, { confirm = it.take(20) }, "Repite la contraseña", isPassword = true, imeAction = ImeAction.Done, onDone = { submit() }, leadingIcon = Icons.Filled.Lock)
 
             // Ley 1581 de 2012 (RNF-04)
             Row(
                 modifier = Modifier.fillMaxWidth().clickable { accepted = !accepted },
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Checkbox(checked = accepted, onCheckedChange = { accepted = it })
+                Checkbox(
+                    checked = accepted,
+                    onCheckedChange = { accepted = it },
+                    colors = CheckboxDefaults.colors(checkedColor = Blue700)
+                )
                 Text(
                     "Autorizo el tratamiento de mis datos personales conforme a la Ley 1581 de 2012.",
                     style = MaterialTheme.typography.bodyMedium, color = Ink
