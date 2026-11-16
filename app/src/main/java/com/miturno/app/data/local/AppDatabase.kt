@@ -11,7 +11,7 @@ import com.miturno.app.data.model.User
 
 @Database(
     entities = [Point::class, ServiceItem::class, User::class, Turn::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

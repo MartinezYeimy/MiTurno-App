@@ -37,6 +37,9 @@ interface AppDao {
     @Insert
     suspend fun insertUser(user: User): Long
 
+    @Query("SELECT * FROM users WHERE id = :id")
+    suspend fun getUser(id: Long): User?
+
     @Query(
         """SELECT * FROM users
            WHERE role = :role

@@ -19,6 +19,8 @@ class StaffViewModel(
 
     private val pointId: Long = session.state.value?.pointId ?: 0L
     val staffName: String = session.state.value?.name.orEmpty()
+    /** Módulo o ventanilla de este funcionario; se le informa al afiliado cuando lo llaman. */
+    val module: String = session.state.value?.module.orEmpty().ifBlank { "Módulo 1" }
 
     val pointName: StateFlow<String> = repo.observePoints()
         .map { list -> list.firstOrNull { it.id == pointId }?.name ?: "Punto de atención" }
@@ -42,8 +44,8 @@ class StaffViewModel(
     /** RF-12 */
     fun callNext() {
         viewModelScope.launch {
-            repo.callNext(pointId)
-                .onSuccess { _message.value = "Llamando al turno ${it.number}" }
+            repo.callNext(pointId, module)
+                .onSuccess { _message.value = "Llamando al turno ${it.number} a $module" }
                 .onFailure { _message.value = it.message ?: "No se pudo llamar el siguiente turno" }
         }
     }

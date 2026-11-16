@@ -58,6 +58,7 @@ import com.miturno.app.ui.theme.Blue700
 import com.miturno.app.ui.theme.BluePrimary
 import com.miturno.app.ui.theme.Blue900
 import com.miturno.app.ui.theme.Ink
+import com.miturno.app.util.WaitEstimate
 
 //pantalla de funcionario solicitar turno o ver historial
 @Composable
@@ -196,16 +197,27 @@ private fun ActiveTurnSection(turn: Turn, progress: Progress, onCancel: () -> Un
             Row(Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Filled.Notifications, contentDescription = null, tint = Blue900, modifier = Modifier.size(36.dp))
                 Spacer(Modifier.width(14.dp))
-                Text(
-                    "¡Es tu turno! Dirígete al módulo de atención.",
-                    style = MaterialTheme.typography.titleLarge, color = Blue900
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text("¡Es tu turno!", style = MaterialTheme.typography.titleLarge, color = Blue900)
+                    // Módulo o ventanilla donde lo atienden
+                    Text(
+                        if (turn.module.isBlank()) "Dirígete al módulo de atención."
+                        else "Dirígete a: ${turn.module}",
+                        style = MaterialTheme.typography.headlineMedium, color = Blue900
+                    )
+                }
             }
         }
     } else {
         // RF-05: turno en atención / RF-06: turnos antes del tuyo
-        InfoCard("Turno que se está atendiendo ahora", progress.current?.number ?: "Aún ninguno")
+        val now = progress.current
+        InfoCard(
+            "Turno que se está atendiendo ahora",
+            now?.let { it.number + if (it.module.isNotBlank()) " · ${it.module}" else "" } ?: "Aún ninguno"
+        )
         InfoCard("Tu posición en la fila", remainingText(progress.ahead))
+        // Tiempo estimado: turnos por delante × minutos por turno
+        InfoCard("Tiempo estimado de espera", WaitEstimate.text(progress.ahead))
     }
 
     Text(

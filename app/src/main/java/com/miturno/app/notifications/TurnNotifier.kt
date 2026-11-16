@@ -17,6 +17,7 @@ import com.miturno.app.R
 import com.miturno.app.data.model.Progress
 import com.miturno.app.data.model.TurnStatus
 import com.miturno.app.data.remote.AppConfig
+import com.miturno.app.util.WaitEstimate
 
 /**
  * RF-07: avisa al afiliado cuando su turno está próximo (faltan 3 o menos) y cuando es llamado.
@@ -49,10 +50,14 @@ class TurnNotifier(private val context: Context) {
         prefs.edit().putInt(key, level).apply()
 
         if (level == 2) {
-            show(turn.id.toInt(), "¡Es tu turno!", "Turno ${turn.number}: dirígete al módulo de atención.")
+            val where = if (turn.module.isBlank()) "al módulo de atención" else "a: ${turn.module}"
+            show(turn.id.toInt(), "¡Es tu turno!", "Turno ${turn.number}: dirígete $where.")
         } else {
             val text = if (progress.ahead == 0) "Eres el siguiente. Prepárate."
-            else "Tu turno está próximo, faltan ${progress.ahead} turnos."
+            else {
+                val faltan = if (progress.ahead == 1) "falta 1 turno" else "faltan ${progress.ahead} turnos"
+                "Tu turno está próximo, $faltan. Tiempo estimado: ${WaitEstimate.text(progress.ahead).removePrefix("Aprox. ")}."
+            }
             show(turn.id.toInt(), "Turno ${turn.number}", text)
         }
     }

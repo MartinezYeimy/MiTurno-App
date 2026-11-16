@@ -8,6 +8,7 @@ import com.miturno.app.data.model.Turn
 import com.miturno.app.data.model.User
 import com.miturno.app.data.remote.ApiError
 import com.miturno.app.data.remote.AppConfig
+import com.miturno.app.data.remote.CallNextRequest
 import com.miturno.app.data.remote.LoginRequest
 import com.miturno.app.data.remote.RegisterRequest
 import com.miturno.app.data.remote.TurnRequest
@@ -81,7 +82,8 @@ class RemoteTurnRepository(private val api: TurnosApi) : TurnRepository {
         call { api.requestTurn(TurnRequest(userId, serviceId, pointId)) }
 
     override suspend fun cancelTurn(turnId: Long): Result<Unit> = call { api.cancel(turnId) }.map { }
-    override suspend fun callNext(pointId: Long): Result<Turn> = call { api.callNext(pointId) }
+    override suspend fun callNext(pointId: Long, module: String): Result<Turn> =
+        call { api.callNext(pointId, CallNextRequest(module)) }
     override suspend fun finishTurn(turnId: Long): Result<Unit> = call { api.finish(turnId) }.map { }
     override suspend fun skipTurn(turnId: Long): Result<Unit> = call { api.skip(turnId) }.map { }
 }

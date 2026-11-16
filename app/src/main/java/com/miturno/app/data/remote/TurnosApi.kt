@@ -20,6 +20,7 @@ object AppConfig {
     const val BASE_URL = "http://10.0.2.2:8080/api/"
     const val POLL_INTERVAL_MS = 3_000L   // RNF-03: la actualización no debe tardar más de 5 s
     const val NOTIFY_THRESHOLD = 3        // RF-07: avisar cuando falten 3 turnos o menos
+    const val MINUTES_PER_TURN = 10       // Tiempo estimado de atención por turno (cámbialo si lo necesitas)
 }
 
 data class LoginRequest(val identifier: String, val password: String, val role: String)
@@ -33,6 +34,8 @@ data class RegisterRequest(
 )
 
 data class TurnRequest(val userId: Long, val serviceId: Long, val pointId: Long)
+
+data class CallNextRequest(val module: String)
 
 data class ApiError(val message: String? = null)
 
@@ -48,7 +51,7 @@ interface TurnosApi {
     @GET("points/{id}/services") suspend fun services(@Path("id") pointId: Long): List<ServiceItem>
     @GET("points/{id}/current") suspend fun current(@Path("id") pointId: Long): Turn?
     @GET("points/{id}/queue") suspend fun queue(@Path("id") pointId: Long): List<Turn>
-    @POST("points/{id}/call-next") suspend fun callNext(@Path("id") pointId: Long): Turn
+    @POST("points/{id}/call-next") suspend fun callNext(@Path("id") pointId: Long, @Body body: CallNextRequest): Turn
 
     @POST("turns") suspend fun requestTurn(@Body body: TurnRequest): Turn
     @POST("turns/{id}/cancel") suspend fun cancel(@Path("id") turnId: Long): Turn

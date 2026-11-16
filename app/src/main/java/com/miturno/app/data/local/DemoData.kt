@@ -11,14 +11,27 @@ import com.miturno.app.util.PasswordHasher
 /**
  * Datos de ejemplo para poder probar la app sin servidor.
  * Solo se insertan la primera vez (cuando la base de datos está vacía).
+ *
+ * CUENTAS DE PRUEBA
+ *   Afiliados (documento / contraseña "123456"):
+ *     1000000001 María Rodríguez   (sin turno: puede pedir uno)
+ *     1000000002 Juan Pérez        (EN ATENCIÓN ahora, Sede Centro)
+ *     1000000003 Ana Martínez      (siguiente en la fila)
+ *     1000000004 Carlos Gómez      (1 turno por delante)
+ *     1000000005 Luisa Fernández   (2 turnos por delante)
+ *     1000000006 Pedro Ramírez     (sin turno: puede pedir uno)
+ *   Funcionarios (contraseña "Func1234"):
+ *     func.centro -> Sede Centro, "Módulo 1"
+ *     func.norte  -> Sede Norte,  "Ventanilla 2"
  */
 object DemoData {
 
-    // Credenciales de prueba (se muestran en la pantalla de inicio de sesión)
     const val DEMO_AFFILIATE = "1000000001"
     const val DEMO_AFFILIATE_PASSWORD = "123456"
     const val DEMO_STAFF = "func.centro"
     const val DEMO_STAFF_PASSWORD = "Func1234"
+
+    private const val AFFILIATE_PASSWORD = "123456"
 
     suspend fun seedIfEmpty(db: AppDatabase) {
         val dao = db.dao()
@@ -44,53 +57,60 @@ object DemoData {
         }
         dao.insertServices(services)
 
-        // Funcionarios
+        // Funcionarios (cada uno atiende en un módulo o ventanilla distinto)
         dao.insertUser(
             User(
                 fullName = "Laura Gómez", username = DEMO_STAFF,
                 passwordHash = PasswordHasher.hash(DEMO_STAFF_PASSWORD),
-                role = Role.STAFF, pointId = 1
+                role = Role.STAFF, pointId = 1, module = "Módulo 1"
             )
         )
         dao.insertUser(
             User(
                 fullName = "Carlos Pérez", username = "func.norte",
                 passwordHash = PasswordHasher.hash(DEMO_STAFF_PASSWORD),
-                role = Role.STAFF, pointId = 2
+                role = Role.STAFF, pointId = 2, module = "Ventanilla 2"
             )
         )
 
-        // Afiliado de prueba
-        dao.insertUser(
-            User(
-                fullName = "María Rodríguez", document = DEMO_AFFILIATE,
-                email = "maria@correo.com", affiliationNumber = "AF-0001",
-                passwordHash = PasswordHasher.hash(DEMO_AFFILIATE_PASSWORD)
-            )
+        // Afiliados de prueba (documento 1000000001 a 1000000006, contraseña 123456)
+        val affiliates = listOf(
+            Triple("María Rodríguez", "maria@correo.com", "AF-0001"),
+            Triple("Juan Pérez", "juan@correo.com", "AF-0002"),
+            Triple("Ana Martínez", "ana@correo.com", "AF-0003"),
+            Triple("Carlos Gómez", "carlos@correo.com", "AF-0004"),
+            Triple("Luisa Fernández", "luisa@correo.com", "AF-0005"),
+            Triple("Pedro Ramírez", "pedro@correo.com", "AF-0006")
         )
-
-        // Otros afiliados con turnos ya en la fila de la Sede Centro
-        val others = (1..4).map { i ->
-            dao.insertUser(
+        val users = affiliates.mapIndexed { i, (name, email, affiliation) ->
+            val document = "100000000${i + 1}"
+            val id = dao.insertUser(
                 User(
-                    fullName = "Afiliado ejemplo $i", document = "200000000$i",
-                    email = "ejemplo$i@correo.com", affiliationNumber = "AF-100$i",
-                    passwordHash = PasswordHasher.hash("123456")
+                    fullName = name, document = document, email = email,
+                    affiliationNumber = affiliation,
+                    passwordHash = PasswordHasher.hash(AFFILIATE_PASSWORD)
                 )
             )
+            Triple(id, name, document)
         }
+
+        // Fila ya armada en la Sede Centro: Juan en atención, Ana, Carlos y Luisa esperando
         val now = System.currentTimeMillis()
         val min = 60_000L
-        fun turn(number: String, consecutive: Int, serviceId: Long, serviceName: String, user: Long, status: String, ago: Long, called: Long? = null) =
-            Turn(
-                number = number, consecutive = consecutive, serviceId = serviceId, serviceName = serviceName,
-                pointId = 1, userId = user, status = status, requestedAt = now - ago * min,
-                calledAt = called?.let { now - it * min }
-            )
+        fun turn(
+            number: String, consecutive: Int, serviceId: Long, serviceName: String,
+            user: Triple<Long, String, String>, status: String, ago: Long,
+            called: Long? = null, module: String = ""
+        ) = Turn(
+            number = number, consecutive = consecutive, serviceId = serviceId, serviceName = serviceName,
+            pointId = 1, userId = user.first, userName = user.second, userDocument = user.third,
+            status = status, requestedAt = now - ago * min,
+            calledAt = called?.let { now - it * min }, module = module
+        )
 
-        dao.insertTurn(turn("A-001", 1, 1, "Autorizaciones", others[0], TurnStatus.IN_SERVICE, 30, 5))
-        dao.insertTurn(turn("B-001", 1, 2, "Afiliación y actualización de datos", others[1], TurnStatus.PENDING, 20))
-        dao.insertTurn(turn("A-002", 2, 1, "Autorizaciones", others[2], TurnStatus.PENDING, 12))
-        dao.insertTurn(turn("C-001", 1, 3, "Información y orientación", others[3], TurnStatus.PENDING, 6))
+        dao.insertTurn(turn("A-001", 1, 1, "Autorizaciones", users[1], TurnStatus.IN_SERVICE, 30, 5, "Módulo 1"))
+        dao.insertTurn(turn("B-001", 1, 2, "Afiliación y actualización de datos", users[2], TurnStatus.PENDING, 20))
+        dao.insertTurn(turn("A-002", 2, 1, "Autorizaciones", users[3], TurnStatus.PENDING, 12))
+        dao.insertTurn(turn("C-001", 1, 3, "Información y orientación", users[4], TurnStatus.PENDING, 6))
     }
 }

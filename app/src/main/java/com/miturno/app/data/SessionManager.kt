@@ -5,7 +5,7 @@ import com.miturno.app.data.model.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-data class Session(val userId: Long, val role: String, val name: String, val pointId: Long)
+data class Session(val userId: Long, val role: String, val name: String, val pointId: Long, val module: String = "")
 
 /** Guarda la sesión activa para que el usuario no tenga que iniciar sesión cada vez que abre la app. */
 class SessionManager(context: Context) {
@@ -19,6 +19,7 @@ class SessionManager(context: Context) {
             .putString("role", user.role)
             .putString("name", user.fullName)
             .putLong("pointId", user.pointId)
+            .putString("module", user.module)
             .apply()
         _state.value = read()
     }
@@ -32,6 +33,9 @@ class SessionManager(context: Context) {
         val id = prefs.getLong("userId", -1L)
         val role = prefs.getString("role", null)
         if (id < 0 || role == null) return null
-        return Session(id, role, prefs.getString("name", "") ?: "", prefs.getLong("pointId", 0L))
+        return Session(
+            id, role, prefs.getString("name", "") ?: "", prefs.getLong("pointId", 0L),
+            prefs.getString("module", "") ?: ""
+        )
     }
 }

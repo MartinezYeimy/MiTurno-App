@@ -31,7 +31,7 @@ interface TurnRepository {
     suspend fun cancelTurn(turnId: Long): Result<Unit>                       // RF-08
 
     // Funcionario
-    suspend fun callNext(pointId: Long): Result<Turn>                        // RF-12
+    suspend fun callNext(pointId: Long, module: String): Result<Turn>        // RF-12
     suspend fun finishTurn(turnId: Long): Result<Unit>                       // RF-13
     suspend fun skipTurn(turnId: Long): Result<Unit>                         // RF-14
 }

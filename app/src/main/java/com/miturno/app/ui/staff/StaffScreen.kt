@@ -103,6 +103,7 @@ fun StaffScreen(vm: StaffViewModel, onLogout: () -> Unit) {
                         Column {
                             Text(pointName, style = MaterialTheme.typography.headlineSmall, color = Ink)
                             Text("Funcionario: ${vm.staffName}", style = MaterialTheme.typography.bodyMedium, color = Ink)
+                            Text("Atiendes en: ${vm.module}", style = MaterialTheme.typography.titleMedium, color = Blue700)
                         }
                     }
                 }
@@ -124,6 +125,12 @@ fun StaffScreen(vm: StaffViewModel, onLogout: () -> Unit) {
                             now.serviceName, style = MaterialTheme.typography.titleMedium,
                             color = Color.White, textAlign = TextAlign.Center
                         )
+                        if (now.userName.isNotBlank()) {
+                            Text(
+                                "${now.userName} · Doc. ${now.userDocument}",
+                                style = MaterialTheme.typography.bodyLarge, color = Color.White, textAlign = TextAlign.Center
+                            )
+                        }
                         now.calledAt?.let {
                             Text("Llamado a las ${TimeUtils.time(it)}", style = MaterialTheme.typography.bodyMedium, color = Color.White)
                         }
@@ -194,6 +201,9 @@ private fun QueueRow(turn: Turn, onSkip: () -> Unit) {
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(turn.number, style = MaterialTheme.typography.headlineSmall, color = Blue700)
+                if (turn.userName.isNotBlank()) {
+                    Text("${turn.userName} · Doc. ${turn.userDocument}", style = MaterialTheme.typography.titleSmall, color = Ink)
+                }
                 Text(turn.serviceName, style = MaterialTheme.typography.bodyMedium, color = Ink)
                 Text("Solicitado a las ${TimeUtils.time(turn.requestedAt)}", style = MaterialTheme.typography.bodySmall, color = Ink)
             }

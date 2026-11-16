@@ -23,6 +23,9 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalCoroutinesApi::class)
 class AppContainer(context: Context) {
 
+    // La base de datos cambió (v2): se reinicia con los datos de ejemplo, así que se descarta la sesión anterior.
+    private val schemaCheck = resetIfNewSchema(context)
+
     val session = SessionManager(context)
     val notifier = TurnNotifier(context)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -32,6 +35,15 @@ class AppContainer(context: Context) {
 
     val repository: TurnRepository =
         database?.let { RoomTurnRepository(it) } ?: RemoteTurnRepository(RetrofitProvider.api)
+
+    private fun resetIfNewSchema(context: Context) {
+        val meta = context.getSharedPreferences("app_meta", Context.MODE_PRIVATE)
+        if (meta.getInt("schema", 0) != DB_SCHEMA) {
+            context.getSharedPreferences("session", Context.MODE_PRIVATE).edit().clear().apply()
+            context.getSharedPreferences("notified_turns", Context.MODE_PRIVATE).edit().clear().apply()
+            meta.edit().putInt("schema", DB_SCHEMA).apply()
+        }
+    }
 
     init {
         notifier.createChannel()
@@ -45,5 +57,9 @@ class AppContainer(context: Context) {
                 }
                 .collect { notifier.onProgress(it) }
         }
+    }
+
+    companion object {
+        const val DB_SCHEMA = 2
     }
 }

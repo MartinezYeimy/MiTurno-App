@@ -55,6 +55,8 @@ data class User(
     val passwordHash: String = "",
     val role: String = Role.AFFILIATE,
     val pointId: Long = 0,
+    /** Solo funcionarios: módulo o ventanilla donde atiende (se le muestra al afiliado al ser llamado). */
+    val module: String = "",
     val active: Boolean = true
 )
 
@@ -68,10 +70,15 @@ data class Turn(
     val serviceName: String = "",
     val pointId: Long = 0,
     val userId: Long = 0,
+    /** Datos del afiliado, para que el funcionario sepa a quién atiende. */
+    val userName: String = "",
+    val userDocument: String = "",
     val status: String = TurnStatus.PENDING,
     val requestedAt: Long = 0,
     val calledAt: Long? = null,
-    val finishedAt: Long? = null
+    val finishedAt: Long? = null,
+    /** Módulo o ventanilla que llamó el turno (se llena al pasar a EN_ATENCION). */
+    val module: String = ""
 )
 
 /**

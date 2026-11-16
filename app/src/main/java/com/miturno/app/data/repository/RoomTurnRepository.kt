@@ -71,6 +71,7 @@ class RoomTurnRepository(private val db: AppDatabase) : TurnRepository {
             }
             // RF-04: prefijo del servicio + consecutivo del día (ej. A-015)
             val next = dao.lastConsecutive(serviceId, TimeUtils.startOfToday()) + 1
+            val user = dao.getUser(userId)
             val turn = Turn(
                 number = String.format(Locale.US, "%s-%03d", service.prefix, next),
                 consecutive = next,
@@ -78,6 +79,8 @@ class RoomTurnRepository(private val db: AppDatabase) : TurnRepository {
                 serviceName = service.name,
                 pointId = pointId,
                 userId = userId,
+                userName = user?.fullName.orEmpty(),
+                userDocument = user?.document.orEmpty(),
                 status = TurnStatus.PENDING,
                 requestedAt = System.currentTimeMillis()
             )
@@ -99,13 +102,13 @@ class RoomTurnRepository(private val db: AppDatabase) : TurnRepository {
     }
 
     // ---------- Funcionario ----------
-    override suspend fun callNext(pointId: Long): Result<Turn> = db.withTransaction {
+    override suspend fun callNext(pointId: Long, module: String): Result<Turn> = db.withTransaction {
         val next = dao.getNextPending(pointId)
             ?: return@withTransaction Result.failure(AppException("No hay turnos pendientes en la fila"))
         val now = System.currentTimeMillis()
         // El turno que estaba en atención se cierra como ATENDIDO
         dao.getCurrent(pointId)?.let { dao.updateTurn(it.copy(status = TurnStatus.DONE, finishedAt = now)) }
-        val called = next.copy(status = TurnStatus.IN_SERVICE, calledAt = now)
+        val called = next.copy(status = TurnStatus.IN_SERVICE, calledAt = now, module = module)
         dao.updateTurn(called)
         Result.success(called)
     }
